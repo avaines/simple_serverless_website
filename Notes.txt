@@ -1,0 +1,4 @@
+https://github.com/michaelpesa/aws-sam-static-website/blob/master/website.yml
+
+https://medium.com/comsystoreply/fullstack-serverless-with-aws-sam-a64adcace19f
+
