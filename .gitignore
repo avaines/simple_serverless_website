@@ -1,4 +1,7 @@
 .env
 **/.DS_Store
 .vscode/
-*-sam-outputs.json
+*-outputs.*
+ToDo**
+src/terraform/.terraform.lock.hcl
+src/terraform/.terraform/
