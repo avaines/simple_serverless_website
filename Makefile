@@ -10,32 +10,16 @@ export $(shell sed 's/=.*//' .env)
 # Load Variables from the sam-output.json file
 S3_BUCKET_NAME := $(shell jq -r '.frontend_bucket_name.value' ${ENV_TYPE}-${ENVIRONMENT}-outputs.json)
 
+
 # Infrastructure
-# deploy:
-# 	sam deploy -t src/aws/sam/template.yml \
-# 		--stack-name ${ENV_NAME}-${APP_NAME} \
-# 		--s3-bucket ${AWS_BUCKET_NAME} \
-# 		--region ${AWS_REGION} \
-# 		--no-fail-on-empty-changeset \
-# 		--capabilities CAPABILITY_IAM
-
-# # Dump and convert the outputs from the SAM CF stack into a key value map which we can use later
-# 	sam list stack-outputs \
-# 		--stack-name ${ENV_NAME}-${APP_NAME} \
-# 		--region ${AWS_REGION} \
-# 		--output json \
-# 		| jq 'reduce .[] as $$item ({}; . + {($$item.OutputKey): $$item.OutputValue})' > ${ENV_NAME}-${APP_NAME}-sam-outputs.json
-
-# validate:
-# 	sam validate -t src/aws/sam/template.yml \
-# 		--region ${AWS_REGION} \
-# 		--lint
-
+.PHONY: prepare-terraform-backend
+prepare-terraform-backend:
+	sed -i '' -e '/bucket.*=/ s/= .*/= "${AWS_BUCKET_NAME}"/' ./src/terraform/backend.tf
+	sed -i '' -e '/region.*=/ s/= .*/= "${AWS_REGION}"/' ./src/terraform/backend.tf
+	sed -i '' -e '/key.*=/ s/= .*/= "${ENV_TYPE}\/${ENVIRONMENT}"/' ./src/terraform/backend.tf
 
 plan:
-	sed -i '' -e '/bucket =/ s/= .*/= "${AWS_BUCKET_NAME}"/' ./src/terraform/backend.tf
-	sed -i '' -e '/region =/ s/= .*/= "${AWS_REGION}"/' ./src/terraform/backend.tf
-	sed -i '' -e '/key =/ s/= .*/= "${ENV_TYPE}\/${ENVIRONMENT}"/' ./src/terraform/backend.tf
+	$(MAKE) prepare-terraform-backend
 
 	cd ./src/terraform ;\
 	terraform init ;\
@@ -48,6 +32,8 @@ plan:
 		-var environment=${ENVIRONMENT}
 
 apply:
+	$(MAKE) prepare-terraform-backend
+
 	cd ./src/terraform ;\
 	terraform init ;\
 	terraform apply \
@@ -58,9 +44,7 @@ apply:
 		-var environment=${ENVIRONMENT} ;\
 
 outputs:
-	sed -i '' -e '/bucket =/ s/= .*/= "${AWS_BUCKET_NAME}"/' ./src/terraform/backend.tf
-	sed -i '' -e '/region =/ s/= .*/= "${AWS_REGION}"/' ./src/terraform/backend.tf
-	sed -i '' -e '/key =/ s/= .*/= "${ENV_TYPE}\/${ENVIRONMENT}"/' ./src/terraform/backend.tf
+	$(MAKE) prepare-terraform-backend
 
 	cd ./src/terraform ;\
 	terraform init ;\

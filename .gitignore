@@ -3,5 +3,7 @@
 .vscode/
 *-outputs.*
 ToDo**
+src/terraform/backend.tf # Staged with placeholder values
 src/terraform/.terraform.lock.hcl
 src/terraform/.terraform/
+src/terraform/lambda/
