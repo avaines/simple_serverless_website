@@ -54,7 +54,7 @@ outputs:
 site-run:
 	cd src/frontend ; \
 	npm install ; \
-	npm start
+	npm run dev
 
 site-build:
 	cd src/frontend/ ; \
@@ -72,7 +72,7 @@ site-publish:
 	$(MAKE) outputs
 
 	echo "Uploading bundle to $(S3_BUCKET_NAME)"
-	aws s3 cp --region ${AWS_REGION} --recursive src/frontend/build/ s3://$(S3_BUCKET_NAME)
+	aws s3 cp --region ${AWS_REGION} --recursive src/frontend/dist/ s3://$(S3_BUCKET_NAME)
 
 # Build the infra, deploy the site in one go
 jfdi:

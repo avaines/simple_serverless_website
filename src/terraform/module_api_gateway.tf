@@ -19,51 +19,7 @@ module "api_gateway" {
 
   create_api_domain_name           = false
   create_vpc_link                  = false
-  create_default_stage_api_mapping  = false
-
-  # Custom domain
-  # domain_name                 = "terraform-aws-modules.modules.tf"
-  # domain_name_certificate_arn = "arn:aws:acm:eu-west-1:052235179155:certificate/2b3a7ed9-05e1-4f9e-952b-27744ba06da6"
-
-  # Routes and integrations
-  integrations = {
-    "GET /api/read" = {
-        lambda_arn             = aws_lambda_function.api_get_data.arn
-        payload_format_version = "2.0"
-        authorization_type     = "JWT"
-        authorizer_key         = "cognito"
-        #   authorization_scopes   = "tf/something.relevant.read,tf/something.relevant.write" # Should comply with the resource server configuration part of the cognito user pool
-        throttling_rate_limit  = 80
-        throttling_burst_limit = 40
-    }
-
-    "POST /api/create" = {
-        lambda_arn             = aws_lambda_function.api_get_data.arn
-        payload_format_version = "2.0"
-        authorization_type     = "JWT"
-        authorizer_key         = "cognito"
-        throttling_rate_limit  = 80
-        throttling_burst_limit = 40
-    }
-
-    "PUT /api/update" = {
-        lambda_arn             = aws_lambda_function.api_get_data.arn
-        payload_format_version = "2.0"
-        authorization_type     = "JWT"
-        authorizer_key         = "cognito"
-        throttling_rate_limit  = 80
-        throttling_burst_limit = 40
-    }
-
-    "DELETE /api/delete" = {
-        lambda_arn             = aws_lambda_function.api_get_data.arn
-        payload_format_version = "2.0"
-        authorization_type     = "JWT"
-        authorizer_key         = "cognito"
-        throttling_rate_limit  = 80
-        throttling_burst_limit = 40
-    }
-  }
+  create_default_stage_api_mapping = false
 
   authorizers = {
     "cognito" = {
@@ -73,6 +29,72 @@ module "api_gateway" {
       audience         = [aws_cognito_user_pool_client.main.id]
       issuer           = "https://${aws_cognito_user_pool.main.endpoint}"
     }
+  }
+
+  # Routes and integrations
+  integrations = {
+    "GET /api/posts" = {
+        lambda_arn             = aws_lambda_function.api_get_posts.arn
+        payload_format_version = "2.0"
+        # authorization_type     = "JWT"
+        # authorizer_key         = "cognito"
+        # authorization_scopes   = "tf/something.relevant.read,tf/something.relevant.write"
+        throttling_rate_limit  = 80
+        throttling_burst_limit = 40
+    }
+
+    "GET /api/posts/{proxy}" = {
+        lambda_arn             = aws_lambda_function.api_get_posts.arn
+        payload_format_version = "2.0"
+        # authorization_type     = "JWT"
+        # authorizer_key         = "cognito"
+        # authorization_scopes   = "tf/something.relevant.read,tf/something.relevant.write"
+    }
+
+    "GET /api/users" = {
+        lambda_arn             = aws_lambda_function.api_get_users.arn
+        payload_format_version = "2.0"
+        # authorization_type     = "JWT"
+        # authorizer_key         = "cognito"
+        # authorization_scopes   = "tf/something.relevant.read,tf/something.relevant.write"
+        throttling_rate_limit  = 80
+        throttling_burst_limit = 40
+    }
+
+    "GET /api/users/{proxy}" = {
+        lambda_arn             = aws_lambda_function.api_get_users.arn
+        payload_format_version = "2.0"
+        # authorization_type     = "JWT"
+        # authorizer_key         = "cognito"
+        # authorization_scopes   = "tf/something.relevant.read,tf/something.relevant.write"
+    }
+
+    # "POST /api/create" = {
+    #     lambda_arn             = aws_lambda_function.api_get_data.arn
+    #     payload_format_version = "2.0"
+    #     authorization_type     = "JWT"
+    #     authorizer_key         = "cognito"
+    #     throttling_rate_limit  = 80
+    #     throttling_burst_limit = 40
+    # }
+
+    # "PUT /api/update" = {
+    #     lambda_arn             = aws_lambda_function.api_get_data.arn
+    #     payload_format_version = "2.0"
+    #     authorization_type     = "JWT"
+    #     authorizer_key         = "cognito"
+    #     throttling_rate_limit  = 80
+    #     throttling_burst_limit = 40
+    # }
+
+    # "DELETE /api/delete" = {
+    #     lambda_arn             = aws_lambda_function.api_get_data.arn
+    #     payload_format_version = "2.0"
+    #     authorization_type     = "JWT"
+    #     authorizer_key         = "cognito"
+    #     throttling_rate_limit  = 80
+    #     throttling_burst_limit = 40
+    # }
   }
 
   tags = {
