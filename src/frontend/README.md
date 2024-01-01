@@ -1,6 +1,7 @@
 # frontend
 
 This frontend extends the tutorial from https://marmelab.com/react-admin/Tutorial.html (Dec 2023) for a really simple CRUD admin pannel which i extended to use our API.
+
 ## Installation
 
 Install the application dependencies by running:

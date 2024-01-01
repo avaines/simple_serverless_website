@@ -12,9 +12,9 @@ module "api_gateway" {
         "x-amz-date",
         "x-amz-user-agent",
     ]
-
     allow_methods = ["*"]
     allow_origins = ["*"]
+    expose_headers = ["x-total-count"]
   }
 
   create_api_domain_name           = false
@@ -36,8 +36,8 @@ module "api_gateway" {
     "GET /api/posts" = {
         lambda_arn             = aws_lambda_function.api_get_posts.arn
         payload_format_version = "2.0"
-        # authorization_type     = "JWT"
-        # authorizer_key         = "cognito"
+        authorization_type     = "JWT"
+        authorizer_key         = "cognito"
         # authorization_scopes   = "tf/something.relevant.read,tf/something.relevant.write"
         throttling_rate_limit  = 80
         throttling_burst_limit = 40
@@ -46,16 +46,16 @@ module "api_gateway" {
     "GET /api/posts/{proxy}" = {
         lambda_arn             = aws_lambda_function.api_get_posts.arn
         payload_format_version = "2.0"
-        # authorization_type     = "JWT"
-        # authorizer_key         = "cognito"
+        authorization_type     = "JWT"
+        authorizer_key         = "cognito"
         # authorization_scopes   = "tf/something.relevant.read,tf/something.relevant.write"
     }
 
     "GET /api/users" = {
         lambda_arn             = aws_lambda_function.api_get_users.arn
         payload_format_version = "2.0"
-        # authorization_type     = "JWT"
-        # authorizer_key         = "cognito"
+        authorization_type     = "JWT"
+        authorizer_key         = "cognito"
         # authorization_scopes   = "tf/something.relevant.read,tf/something.relevant.write"
         throttling_rate_limit  = 80
         throttling_burst_limit = 40
@@ -64,8 +64,8 @@ module "api_gateway" {
     "GET /api/users/{proxy}" = {
         lambda_arn             = aws_lambda_function.api_get_users.arn
         payload_format_version = "2.0"
-        # authorization_type     = "JWT"
-        # authorizer_key         = "cognito"
+        authorization_type     = "JWT"
+        authorizer_key         = "cognito"
         # authorization_scopes   = "tf/something.relevant.read,tf/something.relevant.write"
     }
 

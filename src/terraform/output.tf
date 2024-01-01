@@ -7,5 +7,9 @@ output "frontend_cdn_cname" {
 }
 
 output "cognito_user_pool_id" {
+  value = aws_cognito_user_pool.main.id
+}
+
+output "cognito_app_client_id" {
   value = aws_cognito_user_pool_client.main.id
 }
