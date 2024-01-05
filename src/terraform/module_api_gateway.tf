@@ -49,6 +49,8 @@ module "api_gateway" {
         authorization_type     = "JWT"
         authorizer_key         = "cognito"
         # authorization_scopes   = "tf/something.relevant.read,tf/something.relevant.write"
+        throttling_rate_limit  = 80
+        throttling_burst_limit = 40
     }
 
     "GET /api/users" = {
@@ -67,6 +69,8 @@ module "api_gateway" {
         authorization_type     = "JWT"
         authorizer_key         = "cognito"
         # authorization_scopes   = "tf/something.relevant.read,tf/something.relevant.write"
+        throttling_rate_limit  = 80
+        throttling_burst_limit = 40
     }
 
     # "POST /api/create" = {

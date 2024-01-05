@@ -1,24 +1,19 @@
 import jsonServerProvider from "ra-data-json-server";
+import { fetchUtils } from 'react-admin';
+import { getJwtToken } from "./authProvider";
 
-// const httpClient = (url, options = {}) => {
-//     if (!options.headers) {
-//         options.headers = new Headers({Accept: 'application/json'});
-//     }
-
-//     return Auth.currentSession()
-//         .then(data => {
-//             options.headers.set('Authorization', data);
-//             return options;
-//         })
-//         .then(options => 
-//             return fetchUtils.fetchJson(url, options)
-//         );
-// }
+const httpClient = async (url: string, options: any = {}) => {
+  options.user = {
+      authenticated: true,
+      token: await getJwtToken(),
+  };
+  return fetchUtils.fetchJson(url, options);
+};
 
 export const dataProvider = (() => {
     if (import.meta.env.VITE_BACKEND_API_URL) {
-      return jsonServerProvider(import.meta.env.VITE_BACKEND_API_URL);
+      return jsonServerProvider(import.meta.env.VITE_BACKEND_API_URL, httpClient);
     } else {
-      return jsonServerProvider("https://" + window.location.origin + "/api/");
+      return jsonServerProvider("https://" + window.location.origin + "/api/", httpClient);
     }
 })();
