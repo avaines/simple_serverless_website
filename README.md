@@ -24,4 +24,4 @@ A basic CRUD webapp deployed using a SAM template; A Javascript frontend with an
    "ClientId" : "${terraform output cognito_user_pool_id}"
 }'`
 4. Call the API
-curl --request GET 'https://${terraform output frontend_cdn_cname}/api/${endpoint}' --header 'Authorizion: Bearer ${output AuthenticationResult.AccessToken from step 3}'
+curl --request GET 'https://${terraform output frontend_cdn_cname}/api/${endpoint}' --header 'Authorization: Bearer ${output AuthenticationResult.AccessToken from step 3}'

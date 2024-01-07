@@ -8,7 +8,10 @@ export $(shell sed 's/=.*//' .env)
 .SILENT:
 
 # Load Variables from the sam-output.json file
-S3_BUCKET_NAME := $(shell jq -r '.frontend_bucket_name.value' ${ENV_TYPE}-${ENVIRONMENT}-outputs.json)
+S3_BUCKET_NAME := $(shell jq -r '.frontend_bucket_name.value' '${ENV_TYPE}-${ENVIRONMENT}-outputs.json')
+API_URL := $(shell jq -r '.frontend_cdn_cname.value' '${ENV_TYPE}-${ENVIRONMENT}-outputs.json')
+COGNITO_APP_CLIENT_ID := $(shell jq -r '.cognito_app_client_id.value' '${ENV_TYPE}-${ENVIRONMENT}-outputs.json')
+COGNITO_USER_POOL_ID := $(shell jq -r '.cognito_user_pool_id.value' '${ENV_TYPE}-${ENVIRONMENT}-outputs.json')
 
 
 # Infrastructure
@@ -50,13 +53,22 @@ outputs:
 	terraform init ;\
 	terraform output -no-color -json > "../../${ENV_TYPE}-${ENVIRONMENT}-outputs.json"
 
+
 # Frontend
+write-fe-dot-env:
+	cd src/frontend ; \
+	echo VITE_BACKEND_API_URL="https://${API_URL}/api" > .env; \
+	echo VITE_COGNITO_USER_POOL_ID="${COGNITO_USER_POOL_ID}" >> .env; \
+	echo VITE_COGNITO_APP_CLIENT_ID="${COGNITO_APP_CLIENT_ID}" >> .env;
+
 site-run:
+	$(MAKE) write-fe-dot-env
 	cd src/frontend ; \
 	npm install ; \
-	npm start
+	npm run dev
 
 site-build:
+	$(MAKE) write-fe-dot-env
 	cd src/frontend/ ; \
 	npm install ; \
 	npm run build
@@ -68,11 +80,22 @@ site-test:
 
 site-publish:
 	echo "Building site bundle"
-	$(MAKE) site-build
 	$(MAKE) outputs
+	$(MAKE) site-build
 
 	echo "Uploading bundle to $(S3_BUCKET_NAME)"
-	aws s3 cp --region ${AWS_REGION} --recursive src/frontend/build/ s3://$(S3_BUCKET_NAME)
+	aws s3 cp --region ${AWS_REGION} --recursive src/frontend/dist/ s3://$(S3_BUCKET_NAME)
+
+database-reset:
+	python "./src/aws/dynamodb/loadSampleData/main.py" \
+		--empty-first \
+		--table $(shell jq -r '.dynamodb_table_names.value.posts' dev-main-outputs.json) \
+		--data-path "src/aws/dynamodb/loadSampleData/example-posts-data.json"
+
+		python "./src/aws/dynamodb/loadSampleData/main.py" \
+		--empty-first \
+		--table $(shell jq -r '.dynamodb_table_names.value.users' dev-main-outputs.json) \
+		--data-path "src/aws/dynamodb/loadSampleData/example-users-data.json"
 
 # Build the infra, deploy the site in one go
 jfdi:

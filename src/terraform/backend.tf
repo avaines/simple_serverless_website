@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
-    bucket = "PLACEHOLDER:Make will replace this"
-    region = "PLACEHOLDER:Make will replace this"
-    key    = "PLACEHOLDER:Make will replace this"
+    bucket = "terraform-804221019544-state"
+    region = "us-east-1"
+    key    = "dev/main"
   }
 }
