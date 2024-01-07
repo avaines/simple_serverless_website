@@ -86,6 +86,17 @@ site-publish:
 	echo "Uploading bundle to $(S3_BUCKET_NAME)"
 	aws s3 cp --region ${AWS_REGION} --recursive src/frontend/dist/ s3://$(S3_BUCKET_NAME)
 
+database-reset:
+	python "./src/aws/dynamodb/loadSampleData/main.py" \
+		--empty-first \
+		--table $(shell jq -r '.dynamodb_table_names.value.posts' dev-main-outputs.json) \
+		--data-path "src/aws/dynamodb/loadSampleData/example-posts-data.json"
+
+		python "./src/aws/dynamodb/loadSampleData/main.py" \
+		--empty-first \
+		--table $(shell jq -r '.dynamodb_table_names.value.users' dev-main-outputs.json) \
+		--data-path "src/aws/dynamodb/loadSampleData/example-users-data.json"
+
 # Build the infra, deploy the site in one go
 jfdi:
 	$(MAKE) apply

@@ -33,8 +33,8 @@ module "api_gateway" {
 
   # Routes and integrations
   integrations = {
-    "GET /api/posts" = {
-        lambda_arn             = aws_lambda_function.api_get_posts.arn
+    "ANY /api/posts" = {
+        lambda_arn             = aws_lambda_function.api_any_posts.arn
         payload_format_version = "2.0"
         authorization_type     = "JWT"
         authorizer_key         = "cognito"
@@ -43,8 +43,8 @@ module "api_gateway" {
         throttling_burst_limit = 40
     }
 
-    "GET /api/posts/{proxy}" = {
-        lambda_arn             = aws_lambda_function.api_get_posts.arn
+    "ANY /api/posts/{proxy+}" = {
+        lambda_arn             = aws_lambda_function.api_any_posts.arn
         payload_format_version = "2.0"
         authorization_type     = "JWT"
         authorizer_key         = "cognito"
@@ -54,7 +54,7 @@ module "api_gateway" {
     }
 
     "GET /api/users" = {
-        lambda_arn             = aws_lambda_function.api_get_users.arn
+        lambda_arn             = aws_lambda_function.api_any_users.arn
         payload_format_version = "2.0"
         authorization_type     = "JWT"
         authorizer_key         = "cognito"
@@ -63,8 +63,8 @@ module "api_gateway" {
         throttling_burst_limit = 40
     }
 
-    "GET /api/users/{proxy}" = {
-        lambda_arn             = aws_lambda_function.api_get_users.arn
+    "ANY /api/users/{proxy+}" = {
+        lambda_arn             = aws_lambda_function.api_any_users.arn
         payload_format_version = "2.0"
         authorization_type     = "JWT"
         authorizer_key         = "cognito"
@@ -72,36 +72,5 @@ module "api_gateway" {
         throttling_rate_limit  = 80
         throttling_burst_limit = 40
     }
-
-    # "POST /api/create" = {
-    #     lambda_arn             = aws_lambda_function.api_get_data.arn
-    #     payload_format_version = "2.0"
-    #     authorization_type     = "JWT"
-    #     authorizer_key         = "cognito"
-    #     throttling_rate_limit  = 80
-    #     throttling_burst_limit = 40
-    # }
-
-    # "PUT /api/update" = {
-    #     lambda_arn             = aws_lambda_function.api_get_data.arn
-    #     payload_format_version = "2.0"
-    #     authorization_type     = "JWT"
-    #     authorizer_key         = "cognito"
-    #     throttling_rate_limit  = 80
-    #     throttling_burst_limit = 40
-    # }
-
-    # "DELETE /api/delete" = {
-    #     lambda_arn             = aws_lambda_function.api_get_data.arn
-    #     payload_format_version = "2.0"
-    #     authorization_type     = "JWT"
-    #     authorizer_key         = "cognito"
-    #     throttling_rate_limit  = 80
-    #     throttling_burst_limit = 40
-    # }
-  }
-
-  tags = {
-    Name = local.name_prefix
   }
 }

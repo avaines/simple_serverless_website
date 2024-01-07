@@ -13,3 +13,10 @@ output "cognito_user_pool_id" {
 output "cognito_app_client_id" {
   value = aws_cognito_user_pool_client.main.id
 }
+
+output "dynamodb_table_names" {
+  value = {
+    "posts": aws_dynamodb_table.posts.name,
+    "users": aws_dynamodb_table.users.name,
+  }
+}
