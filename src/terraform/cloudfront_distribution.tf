@@ -22,7 +22,7 @@ resource "aws_cloudfront_distribution" "main" {
     domain_name = trimprefix(module.api_gateway.apigatewayv2_api_api_endpoint, "https://")
 
     custom_header {
-      name = "Content-Type"
+      name  = "Content-Type"
       value = "application/json"
     }
 
@@ -81,7 +81,7 @@ resource "aws_cloudfront_distribution" "main" {
       restriction_type = "none"
     }
   }
-  
+
   viewer_certificate {
     cloudfront_default_certificate = true
   }

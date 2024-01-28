@@ -1,93 +1,110 @@
-// const AWS = require('aws-sdk');
-// const dynamoDB = new AWS.DynamoDB.DocumentClient();
+// Lambda Handler for a Specific category of data.
+// In the real world, this should probably be a seperate handlers per method
+// METHOD	         API     URL
+// getList	         GET     http://myapi/posts?_sort=title&_order=ASC&_start=0&_end=24&title=bar
+// getOne	         GET     http://myapi/posts/123
+// getMany	         GET     http://myapi/posts?id=123&id=456&id=789
+// getManyReference	 GET     http://myapi/posts?author_id=345
 
-const sampleData = require('./example-data.json');
+// create	         POST    http://myapi/posts
+// update	         PUT     http://myapi/posts/123
+// updateMany	     PUT     http://myapi/posts/123, PUT http://my.api.url/posts/456, PUT http://my.api.url/posts/789
+// delete	         DELETE  http://myapi/posts/123
 
-exports.handler = async (event) => {
-  // Get query parameters from the request
-  console.log(event)
+// import * as deleteHandler from './handlers/delete';
+// import * as putHandler from './handlers/put';
+// import * as defaultHandler from './handlers/default';
 
-  const queryParams = event.queryStringParameters || {};
+import {getOne, getMany} from './handlers/get';
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 
-  const filter = queryParams.filter ? JSON.parse(queryParams.filter) : null;
-  const sort = queryParams.sort ? JSON.parse(queryParams.sort) : null;
-  const range = queryParams.range ? JSON.parse(queryParams.range) : null;
+const client = new DynamoDBClient({});
+const dynamo = DynamoDBDocumentClient.from(client);
+const tableName = process.env.TABLENAME || "mock";
 
-  // Handle filter functionality
-  let filteredData = [...sampleData];
 
-  if (filter) {
-    console.log("Found a filter query param", filter)
-    // partial match
-    filteredData = filteredData.filter(item => {
-      for (const key in filter) {
-        const filterValue = filter[key].toLowerCase(); // Convert filter value to lowercase for case-insensitive search
-        if (typeof item[key] === 'string' && !item[key].toLowerCase().includes(filterValue)) {
-          return false;
-        }
-      }
-      return true;
-    });
-
-    // Exact match
-    // filteredData = filteredData.filter(item => {
-    //   for (const key in filter) {
-    //     if (item[key] !== filter[key]) {
-    //       return false;
-    //     }
-    //   }
-    //   return true;
-    // });
-  }
-
-  // Handle range functionality
-  if (range && range.length === 2) {
-    console.log("Found a range query param", range)
-    const [start, end] = range;
-    filteredData = filteredData.filter(item => item.id >= start && item.id <= end);
-  }
-
-  // Handle sort functionality
-  if (sort) {
-    console.log("Found a sort query param", sort)
-    filteredData.sort((a, b) => {
-      const [sortKey, sortOrder] = sort;
-      const comparison = a[sortKey] > b[sortKey] ? 1 : -1;
-      return sortOrder === 'ASC' ? comparison : -comparison;
-    });
-  }
-
-  // If 'id' is provided in path parameter, return specific item
-  const postId = event.pathParameters ? event.pathParameters.id : null;
-  if (postId) {
-    console.log("Found a post ID path", postId)
-    const post = filteredData.find(item => item.id === parseInt(postId));
-    if (!post) {
-      return {
-        statusCode: 404,
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ message: 'Post not found' }, null, 4)
-      };
-    }
-    return {
-      statusCode: 200,
-      headers: { 
-        "X-Total-Count": filteredData.length,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(post, null, 4)
-    };
-  }
-
-  // Return filtered/sorted/ranged data
-  return {
-    statusCode: 200,
-    headers: { 
-      "X-Total-Count": filteredData.length,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(filteredData, null, 4)
+export const handler = async (event, context) => {
+  let body;
+  let statusCode = 200;
+  const headers = {
+    "Content-Type": "application/json",
   };
+
+  console.log("event:", event)
+  console.log("context:", context)
+
+    try {
+        switch (event.routeKey) {
+            case "GET /posts/{id}":
+                const id = event.pathParameters.id || null
+                statusCode, body = await getOne(tableName, id);
+                break;
+
+            case "GET /posts":
+                body = await getMany(tableName);
+                break;
+            // case "DELETE /posts/{id}":
+            //     await dynamo.send(
+            //     new DeleteCommand({
+            //         TableName: tableName,
+            //         Key: {
+            //         id: event.pathParameters.id,
+            //         },
+            //     })
+            //     );
+            //     body = `Deleted item ${event.pathParameters.id}`;
+            //     break;
+
+            // case "GET /posts/{id}":
+                // body = await dynamo.send(
+                //   new GetCommand({
+                //     TableName: tableName,
+                //     Key: {
+                //       id: event.pathParameters.id,
+                //     },
+                //   })
+                // );
+                // body = body.Item;
+                // break;
+
+            // case "GET /posts":
+                // body = await dynamo.send(
+                //   new ScanCommand({ TableName: tableName })
+                // );
+                // body = body.Items;
+                // break;
+
+            // case "PUT /posts":
+            //     let requestJSON = JSON.parse(event.body);
+            //     await dynamo.send(
+            //         new PutCommand({
+            //         TableName: tableName,
+            //         Item: {
+            //             id: requestJSON.id,
+            //             price: requestJSON.price,
+            //             name: requestJSON.name,
+            //         },
+            //         })
+            //     );
+            //     body = `Put item ${requestJSON.id}`;  bt
+            //     break;
+
+            default:
+                throw new Error(`Unsupported route: "${event.routeKey}"`);
+        
+        }
+    } catch (err) {
+        statusCode = 400;
+        body = err.message;
+
+    } finally {
+        body = JSON.stringify(body);
+    }
+
+    return {
+        statusCode,
+        body,
+        headers,
+    };
 };

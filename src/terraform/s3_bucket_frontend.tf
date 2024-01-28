@@ -19,7 +19,7 @@ resource "aws_s3_bucket_policy" "frontend" {
 data "aws_iam_policy_document" "frontend" {
   statement {
     principals {
-      type        = "AWS"
+      type = "AWS"
       identifiers = [
         aws_cloudfront_origin_access_identity.main.iam_arn,
       ]
