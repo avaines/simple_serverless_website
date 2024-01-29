@@ -20,6 +20,7 @@ data "aws_iam_policy_document" "allow_lambda_any_posts_dynamodb" {
     effect = "Allow"
     actions = [
       "dynamodb:GetItem",
+      "dynamodb:Scan",
     ]
 
     resources = [

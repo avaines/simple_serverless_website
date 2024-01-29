@@ -19,11 +19,15 @@ exports.handler = async (event) => {
     let body;
     let statusCode = 200;
     let headers = {}
+    console.log(event)
+
+    console.log(event.requestContext.authorizer.jwt.claims.username, event.requestContext.http.path)
+
 
     try {
         switch (event.requestContext.http.method) {
             case "GET":
-                if ("proxy" in event.pathParameters) {
+                if ("pathParameters" in event && event.pathParameters.proxy != "") {
                     let result = await getOne(event.pathParameters.proxy);
                     statusCode = result.statusCode
                     body = result.body
