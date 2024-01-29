@@ -11,39 +11,31 @@
 // updateMany	     PUT     http://myapi/posts/123, PUT http://my.api.url/posts/456, PUT http://my.api.url/posts/789
 // delete	         DELETE  http://myapi/posts/123
 
-// import * as deleteHandler from './handlers/delete';
-// import * as putHandler from './handlers/put';
-// import * as defaultHandler from './handlers/default';
-
-import {getOne, getMany} from './handlers/get';
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-
-const client = new DynamoDBClient({});
-const dynamo = DynamoDBDocumentClient.from(client);
-const tableName = process.env.TABLENAME || "mock";
+// import {getOne, getMany} from './handlers/get.js';
+const { getOne, getMany } = require('./handlers/get.js');
 
 
-export const handler = async (event, context) => {
-  let body;
-  let statusCode = 200;
-  const headers = {
-    "Content-Type": "application/json",
-  };
-
-  console.log("event:", event)
-  console.log("context:", context)
+exports.handler = async (event) => {
+    let body;
+    let statusCode = 200;
+    let headers = {}
 
     try {
-        switch (event.routeKey) {
-            case "GET /posts/{id}":
-                const id = event.pathParameters.id || null
-                statusCode, body = await getOne(tableName, id);
-                break;
+        switch (event.requestContext.http.method) {
+            case "GET":
+                if ("proxy" in event.pathParameters) {
+                    let result = await getOne(event.pathParameters.proxy);
+                    statusCode = result.statusCode
+                    body = result.body
+                    break;
+                } else {
+                    let result = await getMany(event.queryStringParameters);
+                    statusCode = result.statusCode
+                    body = result.body
+                    break;
+                }
 
-            case "GET /posts":
-                body = await getMany(tableName);
-                break;
+            // case "GET /posts":
             // case "DELETE /posts/{id}":
             //     await dynamo.send(
             //     new DeleteCommand({
@@ -91,15 +83,18 @@ export const handler = async (event, context) => {
             //     break;
 
             default:
-                throw new Error(`Unsupported route: "${event.routeKey}"`);
-        
+                throw new Error(`Unsupported method: "${requestContext.http.method}"`);
         }
     } catch (err) {
         statusCode = 400;
         body = err.message;
 
     } finally {
-        body = JSON.stringify(body);
+        body = JSON.stringify(body, null, 4)
+        headers = { 
+            "X-Total-Count": body.length,
+            "Content-Type": "application/json"
+        };
     }
 
     return {

@@ -7,13 +7,13 @@ module "api_gateway" {
 
   cors_configuration = {
     allow_headers = [
-        "authorization",
-        "content-type",
-        "x-amz-date",
-        "x-amz-user-agent",
+      "authorization",
+      "content-type",
+      "x-amz-date",
+      "x-amz-user-agent",
     ]
-    allow_methods = ["*"]
-    allow_origins = ["*"]
+    allow_methods  = ["*"]
+    allow_origins  = ["*"]
     expose_headers = ["x-total-count"]
   }
 
@@ -34,43 +34,43 @@ module "api_gateway" {
   # Routes and integrations
   integrations = {
     "ANY /api/posts" = {
-        lambda_arn             = aws_lambda_function.api_any_posts.arn
-        payload_format_version = "2.0"
-        authorization_type     = "JWT"
-        authorizer_key         = "cognito"
-        # authorization_scopes   = "tf/something.relevant.read,tf/something.relevant.write"
-        throttling_rate_limit  = 80
-        throttling_burst_limit = 40
+      lambda_arn             = aws_lambda_function.api_any_posts.arn
+      payload_format_version = "2.0"
+      authorization_type     = "JWT"
+      authorizer_key         = "cognito"
+      # authorization_scopes   = "tf/something.relevant.read,tf/something.relevant.write"
+      throttling_rate_limit  = 80
+      throttling_burst_limit = 40
     }
 
     "ANY /api/posts/{proxy+}" = {
-        lambda_arn             = aws_lambda_function.api_any_posts.arn
-        payload_format_version = "2.0"
-        authorization_type     = "JWT"
-        authorizer_key         = "cognito"
-        # authorization_scopes   = "tf/something.relevant.read,tf/something.relevant.write"
-        throttling_rate_limit  = 80
-        throttling_burst_limit = 40
+      lambda_arn             = aws_lambda_function.api_any_posts.arn
+      payload_format_version = "2.0"
+      authorization_type     = "JWT"
+      authorizer_key         = "cognito"
+      # authorization_scopes   = "tf/something.relevant.read,tf/something.relevant.write"
+      throttling_rate_limit  = 80
+      throttling_burst_limit = 40
     }
 
     "GET /api/users" = {
-        lambda_arn             = aws_lambda_function.api_any_users.arn
-        payload_format_version = "2.0"
-        authorization_type     = "JWT"
-        authorizer_key         = "cognito"
-        # authorization_scopes   = "tf/something.relevant.read,tf/something.relevant.write"
-        throttling_rate_limit  = 80
-        throttling_burst_limit = 40
+      lambda_arn             = aws_lambda_function.api_any_users.arn
+      payload_format_version = "2.0"
+      authorization_type     = "JWT"
+      authorizer_key         = "cognito"
+      # authorization_scopes   = "tf/something.relevant.read,tf/something.relevant.write"
+      throttling_rate_limit  = 80
+      throttling_burst_limit = 40
     }
 
     "ANY /api/users/{proxy+}" = {
-        lambda_arn             = aws_lambda_function.api_any_users.arn
-        payload_format_version = "2.0"
-        authorization_type     = "JWT"
-        authorizer_key         = "cognito"
-        # authorization_scopes   = "tf/something.relevant.read,tf/something.relevant.write"
-        throttling_rate_limit  = 80
-        throttling_burst_limit = 40
+      lambda_arn             = aws_lambda_function.api_any_users.arn
+      payload_format_version = "2.0"
+      authorization_type     = "JWT"
+      authorizer_key         = "cognito"
+      # authorization_scopes   = "tf/something.relevant.read,tf/something.relevant.write"
+      throttling_rate_limit  = 80
+      throttling_burst_limit = 40
     }
   }
 }

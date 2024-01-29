@@ -1,10 +1,22 @@
 data "archive_file" "any_users" {
   type        = "zip"
-  source_dir = "${path.module}/../aws/lambda/anyUsers/"
+  source_dir  = "${path.module}/../aws/lambda/anyUsers/"
   output_path = "${path.module}/lambda/anyUsers.zip"
 }
 
 data "aws_iam_policy_document" "allow_lambda_any_users_dynamodb" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+    ]
+
+    resources = ["arn:aws:logs:*:*:*"]
+  }
+
   statement {
     effect = "Allow"
     actions = [
@@ -31,7 +43,7 @@ data "aws_iam_policy_document" "allow_lambda_any_users_dynamodb" {
 }
 
 resource "aws_iam_role" "lambda_any_users" {
-  name = "${local.name_prefix}-lambda-any-users"
+  name               = "${local.name_prefix}-lambda-any-users"
   assume_role_policy = data.aws_iam_policy_document.assume_role_lambda.json
 
   inline_policy {
@@ -63,4 +75,10 @@ resource "aws_lambda_permission" "allow_apigw_any_users_invoke" {
   function_name = aws_lambda_function.api_any_users.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${module.api_gateway.apigatewayv2_api_execution_arn}/**"
+}
+
+
+resource "aws_cloudwatch_log_group" "api_any_users" {
+  name              = "/aws/lambda/${aws_lambda_function.api_any_users.function_name}"
+  retention_in_days = 1
 }

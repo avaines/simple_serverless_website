@@ -4,60 +4,43 @@
 // getMany	         GET     http://myapi/posts?id=123&id=456&id=789
 // getManyReference	 GET     http://myapi/posts?author_id=345
 
-// import { ScanCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
+// import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+// import { DynamoDBDocumentClient, GetCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
 
-// export const getMany = async (tableName) => {
-//     const body = await dynamo.send(
-//         new ScanCommand({ TableName: tableName })
-//     );
-//     return body.Items;
-// };
+const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+const { DynamoDBDocumentClient, GetCommand, ScanCommand } = require("@aws-sdk/lib-dynamodb");
 
-// export const getOne = async (event, tableName) => {
-//   const body = await dynamo.send(
-//     new GetCommand({
-//          TableName: tableName,
-//         Key: {
-//             id: event.pathParameters.id,
-//         },
-//     })
-//     );
-//     return body.Item;
-// };
+const client = new DynamoDBClient({});
+const dynamo = DynamoDBDocumentClient.from(client);
+const tableName = process.env.DYNAMODB_TABLE_NAME
 
 
-export const getOne = async (tableName, id) => {
-    console.log("table:", tableName, " IdParam:", id)
-    if (tableName == "mock") {
-        console.log("loading from mocked data")
-        const sampleData = require('./example-data.json');
-    
-        const item = sampleData.find(item => item.id === parseInt(id));
+exports.getOne = async (id) => {
+    console.log("Getting item ", id, "from table", tableName)
+    const body = await dynamo.send(
+        new GetCommand({
+            TableName: tableName,
+            Key: {
+                id : Number(id)
+            },
+        })
+    );
 
-        if (!post) {
-            return {
-                statusCode: 404,
-                body: JSON.stringify({ message: 'Post not found' })
-            };
-        }
-        return {
-            statusCode: 200, 
-            body: JSON.stringify(post)
-        };
-
-    } else {
-        console.log("loading from DynamoDB")
-        const body = await dynamo.send(
-            new GetCommand({
-                TableName: tableName,
-                Key: {
-                    id: event.pathParameters.id,
-                },
-            })
-        );
-    }
     return {
         statusCode: 200, 
         body: body.Item
     };
 };
+
+exports.getMany = async (tableName) => {
+    // const body = await dynamo.send(
+    //     new ScanCommand({ TableName: tableName })
+    // );
+    // return body.Items;
+    return {
+        statusCode: 201, 
+        body: "not implemented yet"
+    };
+
+};
+
