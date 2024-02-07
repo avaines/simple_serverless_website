@@ -21,7 +21,7 @@ prepare-terraform-backend:
 	sed -i '' -e '/region.*=/ s/= .*/= "${AWS_REGION}"/' ./src/terraform/backend.tf
 	sed -i '' -e '/key.*=/ s/= .*/= "${ENV_TYPE}\/${ENVIRONMENT}"/' ./src/terraform/backend.tf
 
-plan:
+infra-plan:
 	$(MAKE) prepare-terraform-backend
 
 	cd ./src/terraform ;\
@@ -34,7 +34,7 @@ plan:
 		-var env_type=${ENV_TYPE} \
 		-var environment=${ENVIRONMENT}
 
-apply:
+infra-apply:
 	$(MAKE) prepare-terraform-backend
 
 	cd ./src/terraform ;\
@@ -47,7 +47,7 @@ apply:
 		-var env_type=${ENV_TYPE} \
 		-var environment=${ENVIRONMENT} ;\
 
-outputs:
+infra-outputs:
 	$(MAKE) prepare-terraform-backend
 
 	cd ./src/terraform ;\
@@ -102,5 +102,5 @@ database-reset:
 
 # Build the infra, deploy the site in one go
 jfdi:
-	$(MAKE) apply
+	$(MAKE) infra-apply
 	$(MAKE) site-publish

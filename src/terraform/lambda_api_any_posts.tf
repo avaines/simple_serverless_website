@@ -19,6 +19,7 @@ data "aws_iam_policy_document" "allow_lambda_any_posts_dynamodb" {
   statement {
     effect = "Allow"
     actions = [
+      "dynamodb:BatchGetItem",
       "dynamodb:GetItem",
       "dynamodb:Scan",
     ]
