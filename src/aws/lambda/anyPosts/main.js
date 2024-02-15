@@ -2,17 +2,18 @@
 // In the real world, this should probably be a seperate handlers per method
 // METHOD	         API     URL
 // create	         POST    http://myapi/posts
-// delete	         DELETE  http://myapi/posts/123
+// delete	         DELETE  http://myapi/posts/UUID
 // getList	         GET     http://myapi/posts?_sort=title&_order=ASC&_start=0&_end=24&title=bar
-// getOne	         GET     http://myapi/posts/123
-// getMany	         GET     http://myapi/posts?id=123&id=456&id=789 //TODO
-// getManyReference	 GET     http://myapi/posts?author_id=345 //TODO
-// update	         PUT     http://myapi/posts/123
-// updateMany	     PUT     http://myapi/posts/123, PUT http://my.api.url/posts/456, PUT http://my.api.url/posts/789
+// getOne	         GET     http://myapi/posts/UUID
+// getMany	         GET     http://myapi/posts?id=UUID&id=UUID&id=UUID //TODO
+// getManyReference	 GET     http://myapi/posts?author_id=UUID //TODO
+// update	         PUT     http://myapi/posts/UUID
+// updateMany	     PUT     http://myapi/posts/UUID, PUT http://my.api.url/posts/UUID, PUT http://my.api.url/posts/UUID
 
 const { getOne, getMany } = require('./handlers/Get.js');
 const { createOne } = require('./handlers/Post.js');
 const { deleteOne } = require('./handlers/Delete.js');
+const { updateOne } = require('./handlers/Put.js');
 
 
 exports.handler = async (event) => {
@@ -25,6 +26,12 @@ exports.handler = async (event) => {
 
     try {
         switch (event.requestContext.http.method) {
+            // Create
+            case "POST":
+                result = await createOne(event.body);
+                break;
+
+                // Read
             case "GET":
                 if ("pathParameters" in event && event.pathParameters.proxy != "") {
                     result = await getOne(event.pathParameters.proxy);
@@ -34,10 +41,14 @@ exports.handler = async (event) => {
                     break;
                 }
 
-            case "POST":
-                result = await createOne(event.body);
-                break;
+            // Update
+            case "PUT":
+                if ("pathParameters" in event && event.pathParameters.proxy != "") {
+                    result = await updateOne(event.pathParameters.proxy, event.body);
+                    break;
+                }
 
+            // Delete
             case "DELETE":
                 if ("pathParameters" in event && event.pathParameters.proxy != "") {
                     result = await deleteOne(event.pathParameters.proxy);

@@ -27,9 +27,8 @@ export const PostList = () => (
     <List filters={postFilters}>
         {/* <Datagrid rowClick="edit"> */}
         <Datagrid>
-            <TextField source="id" />
+            {/* <TextField source="id" /> */}
             <ReferenceField source="userId" reference="users" link="show"/>
-            <TextField source="id" />
             <TextField source="title" />
             <TextField source="body" />
             <EditButton />
@@ -40,7 +39,7 @@ export const PostList = () => (
 export const PostEdit = () => (
     <Edit title={<PostTitle />}>
         <SimpleForm>
-            <TextInput source="id" InputProps={{ disabled: true }} />
+            {/* <TextInput source="id" InputProps={{ disabled: true }} /> */}
             <ReferenceInput source="userId" reference="users" />
             <TextInput source="title" />
             <TextInput source="body" multiline rows={5} />
