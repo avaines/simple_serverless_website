@@ -3,16 +3,14 @@ loadSampleData
 A script to load sample data into a given DynamoDB table with the option to empty it first
 
 Arguments
-    # --data-path --table-name --destroy-first
+    # --data-path --table-name --empty-first
 
     -d or --data-path     The path to a JSON file detailing the data to import in to the table
     -t or --table-name    The name of a DynamoDB table
     --empty-first       If set the table will be emptied before running the import
 
 Example:
-    python loadSampleData/main.py [-d]--data-path [-t]--table-name mytable --destroy-first
-    python iam-wildcard-report.py [-a|--amp $AMP_API_TOKEN] [-o|--opsgenie $OPSGENIE_TOKEN] / 
-        [-e ./engineers.yml] [-d 2022-01-01]
+    python loadSampleData/main.py [-d]--data-path [-t]--table-name mytable --empty-first
 '''
 
 import argparse
@@ -24,7 +22,7 @@ class DynamoDbTable:
     # pylint: disable=R0903, too-few-public-methods
     'Simple class for managing the dynamodb table in question'
 
-    def __init__(self, table_name): 
+    def __init__(self, table_name):
         self.dynamodb = boto3.resource('dynamodb')
         self.table = self.dynamodb.Table(table_name)
 
@@ -38,7 +36,11 @@ class DynamoDbTable:
             with self.table.batch_writer() as batch:
                 print(f"\t Deleting {len(response['Items'])} items in {self.table.name}: ", end='')
                 for i, item in enumerate(response['Items']):
-                    batch.delete_item(Key=item)
+                    batch.delete_item(
+                        Key={
+                            'id': item['id']
+                        }
+                    )
                     print(f"{round((i+1) / len(response['Items'])*100)}%", end=' ')
 
             print(f"\n\t All items deleted from the table: {self.table.name}")

@@ -20,7 +20,9 @@ data "aws_iam_policy_document" "allow_lambda_any_posts_dynamodb" {
     effect = "Allow"
     actions = [
       "dynamodb:BatchGetItem",
+      "dynamodb:DeleteItem",
       "dynamodb:GetItem",
+      "dynamodb:PutItem",
       "dynamodb:Scan",
     ]
 
@@ -72,11 +74,6 @@ resource "aws_lambda_function" "api_any_posts" {
 
   handler = "main.handler"
   runtime = "nodejs20.x"
-
-  # logging_config {
-  #   log_format = "JSON"
-  #   system_log_level = "WARN"
-  # }
 
   environment {
     variables = {

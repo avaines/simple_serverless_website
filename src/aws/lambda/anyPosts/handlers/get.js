@@ -1,7 +1,7 @@
 // METHOD	         API     URL
 // getList	         GET     http://myapi/posts?_sort=title&_order=ASC&_start=0&_end=24&title=bar
-// getOne	         GET     http://myapi/posts/123
-// getMany	         GET     http://myapi/posts?id=123&id=456&id=789
+// getOne	         GET     http://myapi/posts/UUID
+// getMany	         GET     http://myapi/posts?id=UUID&id=UUID&id=UUID
 // getManyReference	 GET     http://myapi/posts?author_id=345
 
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
@@ -17,13 +17,13 @@ exports.getOne = async (id) => {
         new GetCommand({
             TableName: tableName,
             Key: {
-                id : Number(id)
+                id : id
             },
         })
     );
 
     return {
-        statusCode: 200, 
+        statusCode: 200,
         body: data.Item
     };
 };
@@ -38,35 +38,37 @@ exports.getMany = async (queryStringParameters) => {
     let data;
     let statusCode=200;
 
-    console.log("Filter:", filter, "Sort:", sort, "Range:", range, "from table", tableName)
+    // console.log("Filter:", filter, "Sort:", sort, "Range:", range, "from table", tableName)
+    console.log("Filter:", filter, "Sort:", sort, "from table", tableName)
 
+    // Range disabled with switch to UUIDs
     // Handle range functionality
-    if (range && range.length === 2) {
-        const keysMap = [];
+    // if (range && range.length === 2) {
+    //     const keysMap = [];
 
-        for (let i = range[0]; i <= range[1]; i++) {
-            keysMap.push({ id: Number(i) });
-        }
+    //     for (let i = range[0]; i <= range[1]; i++) {
+    //         keysMap.push({ id: Number(i) });
+    //     }
 
-        console.log("Found a range query param", range, keysMap)
-        
-        dataRaw = await dynamo.send(
-            new BatchGetCommand({
-                RequestItems: {
-                    [tableName]: {
-                        Keys: keysMap
-                    }
-                }
-            })
-        );
-        data = dataRaw.Responses[tableName];
-    
-    } else {
-        dataRaw = await dynamo.send(
-            new ScanCommand({ TableName: tableName })
-        );
-        data = dataRaw.Items;
-    }
+    //     console.log("Found a range query param", range, keysMap)
+
+    //     dataRaw = await dynamo.send(
+    //         new BatchGetCommand({
+    //             RequestItems: {
+    //                 [tableName]: {
+    //                     Keys: keysMap
+    //                 }
+    //             }
+    //         })
+    //     );
+    //     data = dataRaw.Responses[tableName];
+
+    // } else {
+    dataRaw = await dynamo.send(
+        new ScanCommand({ TableName: tableName })
+    );
+    data = dataRaw.Items;
+    // }
 
     if (filter) {
         console.log("Found a filter query param", filter)
@@ -103,7 +105,7 @@ exports.getMany = async (queryStringParameters) => {
     }
 
     return {
-        statusCode: statusCode, 
+        statusCode: statusCode,
         body: data
     };
 };

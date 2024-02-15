@@ -3,32 +3,37 @@
 
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 const { DynamoDBDocumentClient, PutCommand } = require("@aws-sdk/lib-dynamodb");
+const { randomUUID } = require('crypto')
 
 const client = new DynamoDBClient({});
 const dynamo = DynamoDBDocumentClient.from(client);
 const tableName = process.env.DYNAMODB_TABLE_NAME
 
-exports.create = async (body) => {
-    console.log("Creating item", body, "in table", tableName)
+function sanitiseString(str){
+    str = str.replace(/[^a-z0-9áéíóúñü\_]/gim,"");
+    return str.trim();
+}
 
-    parsedBody = JSON.parse(body)
+exports.createOne = async (httpPostBody) => {
+    console.log("Creating item", httpPostBody, "in table", tableName)
+    parsedBody = JSON.parse(httpPostBody)
 
     const data = await dynamo.send(
         new PutCommand({
             TableName: tableName,
             Item: {
-                // userId: Number(parsedBody.userId),
-                // title: parsedBody.title,
-                // body: parsedBody.body
+                id: randomUUID(),
+                userId: sanitiseString(parsedBody.userId),
+                title: sanitiseString(parsedBody.title),
+                body: sanitiseString(parsedBody.body)
             },
         })
     );
-    
 
-    console.log(data)
+    body_message = (data.$metadata.httpStatusCode == 200) ? "Success" : "Unsuccessful"
 
     return {
-        statusCode: 200, 
-        body: data
+        statusCode: data.$metadata.httpStatusCode,
+        body: {"message": body_message}
     };
 };

@@ -1,27 +1,27 @@
 // Lambda Handler for a Specific category of data.
 // In the real world, this should probably be a seperate handlers per method
 // METHOD	         API     URL
+// create	         POST    http://myapi/posts
+// delete	         DELETE  http://myapi/posts/123
 // getList	         GET     http://myapi/posts?_sort=title&_order=ASC&_start=0&_end=24&title=bar
 // getOne	         GET     http://myapi/posts/123
 // getMany	         GET     http://myapi/posts?id=123&id=456&id=789 //TODO
 // getManyReference	 GET     http://myapi/posts?author_id=345 //TODO
-
-// create	         POST    http://myapi/posts
 // update	         PUT     http://myapi/posts/123
 // updateMany	     PUT     http://myapi/posts/123, PUT http://my.api.url/posts/456, PUT http://my.api.url/posts/789
-// delete	         DELETE  http://myapi/posts/123
 
 const { getOne, getMany } = require('./handlers/Get.js');
-const { create } = require('./handlers/Post.js');
+const { createOne } = require('./handlers/Post.js');
+const { deleteOne } = require('./handlers/Delete.js');
 
 
 exports.handler = async (event) => {
     let statusCode = 200;
-    let body="{}";
+    let body="";
     let result
-    let headers = {}
+    let headers = {"Content-Type": "application/json"};
 
-    console.log("User:", event.requestContext.authorizer.jwt.claims.username, "has requested:", event.requestContext.http.path)
+    console.log("User:", event.requestContext.authorizer.jwt.claims.username, "has requested:", event.requestContext.http.method, event.requestContext.http.path)
 
     try {
         switch (event.requestContext.http.method) {
@@ -33,27 +33,31 @@ exports.handler = async (event) => {
                     result = await getMany(event.queryStringParameters);
                     break;
                 }
-            
+
             case "POST":
-                result = await create(event.body);
+                result = await createOne(event.body);
                 break;
+
+            case "DELETE":
+                if ("pathParameters" in event && event.pathParameters.proxy != "") {
+                    result = await deleteOne(event.pathParameters.proxy);
+                    break;
+                }
 
             default:
                 throw new Error(`Unsupported method: "${requestContext.http.method}"`);
         }
-    
-        
+
     } catch (err) {
         statusCode = 400;
         body = err.message;
-        
+
     } finally {
-        body = JSON.stringify(result.body, null, 4);
+        if (typeof result.body === 'object') {
+            headers["X-Total-Count"] = result.body.length;
+        }
         statusCode = result.statusCode;
-        headers = { 
-            "X-Total-Count": body.length,
-            "Content-Type": "application/json"
-        };
+        body = JSON.stringify(result.body, null, 4);
     }
 
     return {
