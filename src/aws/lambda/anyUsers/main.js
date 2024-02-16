@@ -1,19 +1,13 @@
 // Lambda Handler for a Specific category of data.
 // In the real world, this should probably be a seperate handlers per method
 // METHOD	         API     URL
-// create	         POST    http://myapi/users
 // delete	         DELETE  http://myapi/users/UUID
-// getList	         GET     http://myapi/users?_sort=title&_order=ASC&_start=0&_end=24&title=bar
+// getList	         GET     http://myapi/users?_sort=title&_order=ASC&title=bar
 // getOne	         GET     http://myapi/users/UUID
-// getMany	         GET     http://myapi/users?id=UUID&id=UUID&id=UUID //TODO
-// getManyReference	 GET     http://myapi/users?author_id=345 //TODO
-// update	         PUT     http://myapi/users/UUID
-// updateMany	     PUT     http://myapi/users/UUID, PUT http://my.api.url/users/UUID, PUT http://my.api.url/users/UUID
+// getMany	         GET     http://myapi/users?id=UUID&id=UUID&id=UUID
 
 const { getOne, getMany } = require('./handlers/Get.js');
-const { createOne } = require('./handlers/Post.js');
 const { deleteOne } = require('./handlers/Delete.js');
-const { updateOne } = require('./handlers/Put.js');
 
 
 exports.handler = async (event) => {
@@ -26,25 +20,13 @@ exports.handler = async (event) => {
 
     try {
         switch (event.requestContext.http.method) {
-            // Create
-            case "POST":
-                result = await createOne(event.body);
-                break;
-
-                // Read
+            // Read
             case "GET":
                 if ("pathParameters" in event && event.pathParameters.proxy != "") {
                     result = await getOne(event.pathParameters.proxy);
                     break;
                 } else {
                     result = await getMany(event.queryStringParameters);
-                    break;
-                }
-
-            // Update
-            case "PUT":
-                if ("pathParameters" in event && event.pathParameters.proxy != "") {
-                    result = await updateOne(event.pathParameters.proxy, event.body);
                     break;
                 }
 

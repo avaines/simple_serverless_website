@@ -30,29 +30,6 @@ data "aws_iam_policy_document" "allow_lambda_any_posts_dynamodb" {
       aws_dynamodb_table.posts.arn
     ]
   }
-
-  # statement {
-  #   effect = "Allow"
-  #   actions = [
-  #     "dynamodb:Query"
-  #   ]
-
-  #   resources = [
-  #     "${aws_dynamodb_table.posts.arn}/*/index/*"
-  #   ]
-  # }
-
-  # statement {
-  #   effect = "Allow"
-  #   actions = [
-  #     "dynamodb:GetItem",
-  #     "dynamodb:Query",
-  #   ]
-
-  #   resources = [
-  #     "${aws_dynamodb_table.posts.arn}/*"
-  #   ]
-  # }
 }
 
 resource "aws_iam_role" "lambda_any_posts" {

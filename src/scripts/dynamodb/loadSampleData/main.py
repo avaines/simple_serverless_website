@@ -3,20 +3,17 @@ loadSampleData
 A script to load sample data into a given DynamoDB table with the option to empty it first
 
 Arguments
-    # --data-path --table-name --empty-first
-
     -d or --data-path     The path to a JSON file detailing the data to import in to the table
     -t or --table-name    The name of a DynamoDB table
-    --empty-first       If set the table will be emptied before running the import
+    --empty-first         If set the table will be emptied before running the import
 
 Example:
-    python loadSampleData/main.py [-d]--data-path [-t]--table-name mytable --empty-first
+    python loadSampleData/main.py [-d]--data-path myfile.json [-t]--table-name mytable --empty-first
 '''
 
 import argparse
 import json
 import boto3
-
 
 class DynamoDbTable:
     # pylint: disable=R0903, too-few-public-methods
@@ -63,12 +60,23 @@ class DynamoDbTable:
         print(f"\n\t {len(data)} items imported into the {self.table.name} table")
 
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', '--data-path', dest='path', help="The path to a JSON file detailing the data to import in to the table", required=True)
-    parser.add_argument('-t', '--table', help="The name of a DynamoDB table", dest='table', required=True)
-    parser.add_argument('--empty-first', dest="empty_first", help="If set the table will be emptied before running the import", action='store_true')
+    parser.add_argument('-d', '--data-path',
+                        dest='path',
+                        help="The path to a JSON file detailing the data to import in to the table",
+                        required=True
+                        )
+    parser.add_argument('-t', '--table',
+                        help="The name of a DynamoDB table",
+                        dest='table',
+                        required=True
+                        )
+    parser.add_argument('--empty-first',
+                        dest="empty_first",
+                        help="If set the table will be emptied before running the import",
+                        action='store_true'
+                        )
     args = parser.parse_args()
 
     dynamodb_table = DynamoDbTable((args.table))
@@ -76,5 +84,7 @@ if __name__ == "__main__":
     if args.empty_first:
         print(f"Destroying all data in the {args.table} table.")
         dynamodb_table.empty_table()
+        print(f"{args.table} emptied")
 
+    print(f"Importing dataset {args.path} into {args.table}.")
     dynamodb_table.import_json_data(args.path)

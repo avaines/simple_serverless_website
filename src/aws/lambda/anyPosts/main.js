@@ -3,10 +3,9 @@
 // METHOD	         API     URL
 // create	         POST    http://myapi/posts
 // delete	         DELETE  http://myapi/posts/UUID
-// getList	         GET     http://myapi/posts?_sort=title&_order=ASC&_start=0&_end=24&title=bar
+// getList	         GET     http://myapi/posts?_sort=title&_order=ASC&title=bar
 // getOne	         GET     http://myapi/posts/UUID
-// getMany	         GET     http://myapi/posts?id=UUID&id=UUID&id=UUID //TODO
-// getManyReference	 GET     http://myapi/posts?author_id=UUID //TODO
+// getMany	         GET     http://myapi/posts?id=UUID&id=UUID&id=UUID
 // update	         PUT     http://myapi/posts/UUID
 // updateMany	     PUT     http://myapi/posts/UUID, PUT http://my.api.url/posts/UUID, PUT http://my.api.url/posts/UUID
 
@@ -31,7 +30,7 @@ exports.handler = async (event) => {
                 result = await createOne(event.body);
                 break;
 
-                // Read
+            // Read
             case "GET":
                 if ("pathParameters" in event && event.pathParameters.proxy != "") {
                     result = await getOne(event.pathParameters.proxy);

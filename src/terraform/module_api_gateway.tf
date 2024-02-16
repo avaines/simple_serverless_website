@@ -38,7 +38,6 @@ module "api_gateway" {
       payload_format_version = "2.0"
       authorization_type     = "JWT"
       authorizer_key         = "cognito"
-      # authorization_scopes   = "tf/something.relevant.read,tf/something.relevant.write"
       throttling_rate_limit  = 80
       throttling_burst_limit = 40
     }
@@ -48,7 +47,6 @@ module "api_gateway" {
       payload_format_version = "2.0"
       authorization_type     = "JWT"
       authorizer_key         = "cognito"
-      # authorization_scopes   = "tf/something.relevant.read,tf/something.relevant.write"
       throttling_rate_limit  = 80
       throttling_burst_limit = 40
     }
@@ -58,7 +56,6 @@ module "api_gateway" {
       payload_format_version = "2.0"
       authorization_type     = "JWT"
       authorizer_key         = "cognito"
-      # authorization_scopes   = "tf/something.relevant.read,tf/something.relevant.write"
       throttling_rate_limit  = 80
       throttling_burst_limit = 40
     }
@@ -68,7 +65,6 @@ module "api_gateway" {
       payload_format_version = "2.0"
       authorization_type     = "JWT"
       authorizer_key         = "cognito"
-      # authorization_scopes   = "tf/something.relevant.read,tf/something.relevant.write"
       throttling_rate_limit  = 80
       throttling_burst_limit = 40
     }

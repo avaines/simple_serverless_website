@@ -1,5 +1,5 @@
 // METHOD	         API     URL
-// getList	         GET     http://myapi/posts?_sort=title&_order=ASC&_start=0&_end=24&title=bar
+// getList	         GET     http://myapi/posts?_sort=title&_order=ASC&title=bar
 // getOne	         GET     http://myapi/posts/UUID
 // getMany	         GET     http://myapi/posts?id=UUID&id=UUID&id=UUID
 // getManyReference	 GET     http://myapi/posts?author_id=345
@@ -31,61 +31,51 @@ exports.getOne = async (id) => {
 exports.getMany = async (queryStringParameters) => {
     const queryParams = queryStringParameters || {};
 
-    const filter = queryParams.filter ? JSON.parse(queryParams.filter) : null;
-    const sort = queryParams.sort ? JSON.parse(queryParams.sort) : null;
+    const sortKey = queryParams._sort || null;
+    const sortOrder = queryParams._order || null;
+    const search = queryParams.search || null;      // Unspecified field, eg a Search
+    const filters = {
+      "userId": queryParams.userId || null,         // Specific match fields, eg a ReferenceInput
+    }
 
     let data;
     let statusCode=200;
 
-    console.log("Filter:", filter, "Sort:", sort, "from table", tableName)
+    console.log("Filter:", filters, "Sort:", sortKey, "Order:", sortOrder)
 
-    // const range = queryParams.range ? JSON.parse(queryParams.range) : null;
-    // Range disabled with switch to UUIDs
-    // Handle range functionality
-    // if (range && range.length === 2) {
-    //     const keysMap = [];
-    //     for (let i = range[0]; i <= range[1]; i++) {
-    //         keysMap.push({ id: Number(i) });
-    //     }
-    //     console.log("Found a range query param", range, keysMap)
-    //     dataRaw = await dynamo.send(
-    //         new BatchGetCommand({
-    //             RequestItems: {
-    //                 [tableName]: {
-    //                     Keys: keysMap
-    //                 }
-    //             }
-    //         })
-    //     );
-    //     data = dataRaw.Responses[tableName];
-    // } else {
-    dataRaw = await dynamo.send(
+    let dataRaw = await dynamo.send(
         new ScanCommand({ TableName: tableName })
     );
-    data = dataRaw.Items;
-    // }
 
-    if (filter) {
-        console.log("Found a filter query param", filter)
-        // Partial match
+    data = dataRaw.Items;
+
+    // Check if any speific filter options are provided, by ensuring the list of known ones isn't just full of null values
+    if (Object.values(filters).some(value => value !== null)) {
         data = data.filter(item => {
-          for (const key in filter) {
-            const filterValue = filter[key].toLowerCase();
-            if (typeof item[key] === 'string' && !item[key].toLowerCase().includes(filterValue)) {
-              return false;
+          for (const key in filters) {
+            if (filters[key] !== null && item[key] === filters[key]) {
+              return true;
             }
           }
-          return true;
+          return false;
         });
     };
 
-    // Handle sort functionality
-    if (sort) {
-        console.log("Found a sort query param", sort)
+    if (search != null) {
+        data = data.filter(item => {
+            return Object.values(item).some(value => {
+              if (typeof value === 'string') {
+                return value.includes(search);
+              }
+              return false;
+            });
+        });
+    };
+
+    if (sortKey != null) {
         data.sort((a, b) => {
-        const [sortKey, sortOrder] = sort;
-        const comparison = a[sortKey] > b[sortKey] ? 1 : -1;
-        return sortOrder === 'ASC' ? comparison : -comparison;
+            const comparison = a[sortKey] > b[sortKey] ? 1 : -1;
+            return sortOrder === "ASC" ? comparison : -comparison;
         });
     }
 

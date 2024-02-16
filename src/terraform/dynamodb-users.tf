@@ -6,6 +6,6 @@ resource "aws_dynamodb_table" "users" {
 
   attribute {
     name = "id"
-    type = "N"
+    type = "S"
   }
 }

@@ -10,7 +10,7 @@ const dynamo = DynamoDBDocumentClient.from(client);
 const tableName = process.env.DYNAMODB_TABLE_NAME
 
 function sanitiseString(str){
-    str = str.replace(/[^a-z0-9 !{}():;,.-=+]/gim,"");
+    str = str.replace(/[^a-z0-9 !{}():;.,-=+]/gim,"");
     return str.trim();
 }
 
