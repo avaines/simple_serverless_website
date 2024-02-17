@@ -1,5 +1,5 @@
 // METHOD	         API     URL
-// delete	         DELETE  http://myapi/posts/123
+// delete	         DELETE  http://myapi/users/UUID
 
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 const { DynamoDBDocumentClient, DeleteCommand } = require("@aws-sdk/lib-dynamodb");

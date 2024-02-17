@@ -9,7 +9,6 @@ data "aws_iam_policy_document" "allow_lambda_any_users_dynamodb" {
     effect = "Allow"
 
     actions = [
-      "logs:CreateLogGroup",
       "logs:CreateLogStream",
       "logs:PutLogEvents",
     ]
@@ -20,24 +19,15 @@ data "aws_iam_policy_document" "allow_lambda_any_users_dynamodb" {
   statement {
     effect = "Allow"
     actions = [
-      "dynamodb:Query"
+      "dynamodb:BatchGetItem",
+      "dynamodb:DeleteItem",
+      "dynamodb:GetItem",
+      "dynamodb:PutItem",
+      "dynamodb:Scan",
     ]
 
     resources = [
-      "${aws_dynamodb_table.users.arn}/*/index/*"
-    ]
-  }
-
-  statement {
-    effect = "Allow"
-    actions = [
-      "dynamodb:BatchanyItem",
-      "dynamodb:anyItem",
-      "dynamodb:Query",
-    ]
-
-    resources = [
-      "${aws_dynamodb_table.users.arn}/*"
+      aws_dynamodb_table.users.arn
     ]
   }
 }

@@ -14,7 +14,7 @@ export const UserList = () => {
                 />
             ) : (
                 <Datagrid rowClick="show">
-                    <TextField source="id" />
+                    {/* <TextField source="id" /> */}
                     <TextField source="name" />
                     {/* <TextField source="username" /> */}
                     <EmailField source="email" />

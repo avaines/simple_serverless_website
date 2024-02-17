@@ -13,3 +13,15 @@ resource "aws_cognito_user_pool_client" "main" {
     "ALLOW_REFRESH_TOKEN_AUTH"
   ]
 }
+
+resource "aws_cognito_user_group" "admin" {
+  name         = "admin"
+  user_pool_id = aws_cognito_user_pool.main.id
+  precedence   = 10
+}
+
+resource "aws_cognito_user_group" "user" {
+  name         = "user"
+  user_pool_id = aws_cognito_user_pool.main.id
+  precedence   = 50
+}

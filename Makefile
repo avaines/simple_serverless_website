@@ -9,10 +9,10 @@ export $(shell sed 's/=.*//' .env)
 
 # Load Variables from the sam-output.json file
 S3_BUCKET_NAME := $(shell jq -r '.frontend_bucket_name.value' '${ENV_TYPE}-${ENVIRONMENT}-outputs.json')
-API_URL := $(shell jq -r '.frontend_cdn_cname.value' '${ENV_TYPE}-${ENVIRONMENT}-outputs.json')
+API_URL := $(shell jq -r '.frontend_cdn.value.cname' '${ENV_TYPE}-${ENVIRONMENT}-outputs.json')
 COGNITO_APP_CLIENT_ID := $(shell jq -r '.cognito_app_client_id.value' '${ENV_TYPE}-${ENVIRONMENT}-outputs.json')
 COGNITO_USER_POOL_ID := $(shell jq -r '.cognito_user_pool_id.value' '${ENV_TYPE}-${ENVIRONMENT}-outputs.json')
-
+CLOUDFRONT_DIST_ID := $(shell jq -r '.frontend_cdn.value.id' '${ENV_TYPE}-${ENVIRONMENT}-outputs.json')
 
 # Infrastructure
 .PHONY: prepare-terraform-backend
@@ -21,7 +21,7 @@ prepare-terraform-backend:
 	sed -i '' -e '/region.*=/ s/= .*/= "${AWS_REGION}"/' ./src/terraform/backend.tf
 	sed -i '' -e '/key.*=/ s/= .*/= "${ENV_TYPE}\/${ENVIRONMENT}"/' ./src/terraform/backend.tf
 
-plan:
+infra-plan:
 	$(MAKE) prepare-terraform-backend
 
 	cd ./src/terraform ;\
@@ -34,7 +34,7 @@ plan:
 		-var env_type=${ENV_TYPE} \
 		-var environment=${ENVIRONMENT}
 
-apply:
+infra-apply:
 	$(MAKE) prepare-terraform-backend
 
 	cd ./src/terraform ;\
@@ -47,7 +47,7 @@ apply:
 		-var env_type=${ENV_TYPE} \
 		-var environment=${ENVIRONMENT} ;\
 
-outputs:
+infra-outputs:
 	$(MAKE) prepare-terraform-backend
 
 	cd ./src/terraform ;\
@@ -81,7 +81,7 @@ site-test:
 
 site-publish:
 	echo "Building site bundle"
-	$(MAKE) outputs
+	$(MAKE) infra-outputs
 	$(MAKE) site-build
 
 	echo "Uploading bundle to $(S3_BUCKET_NAME)"
@@ -89,18 +89,21 @@ site-publish:
 
 # dev helpers
 database-reset:
-	python "./src/aws/dynamodb/loadSampleData/main.py" \
+	echo "Replacing Posts table"
+	python "./src/scripts/dynamodb/loadSampleData/main.py" \
 		--empty-first \
 		--table $(shell jq -r '.dynamodb_table_names.value.posts' dev-main-outputs.json) \
-		--data-path "src/aws/dynamodb/loadSampleData/example-posts-data.json"
+		--data-path "src/scripts/dynamodb/loadSampleData/example-posts-data.json"
 
-		python "./src/aws/dynamodb/loadSampleData/main.py" \
+	echo "Replacing Users table"
+	python "./src/scripts/dynamodb/loadSampleData/main.py" \
 		--empty-first \
 		--table $(shell jq -r '.dynamodb_table_names.value.users' dev-main-outputs.json) \
-		--data-path "src/aws/dynamodb/loadSampleData/example-users-data.json"
+		--data-path "src/scripts/dynamodb/loadSampleData/example-users-data.json"
 
 
 # Build the infra, deploy the site in one go
 jfdi:
-	$(MAKE) apply
+	$(MAKE) infra-apply
 	$(MAKE) site-publish
+	aws cloudfront create-invalidation --distribution-id ${CLOUDFRONT_DIST_ID} --paths "/*" --no-cli-pager

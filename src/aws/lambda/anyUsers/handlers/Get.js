@@ -28,49 +28,23 @@ exports.getOne = async (id) => {
     };
 };
 
+// No searching for users in the example, see Posts
 exports.getMany = async (queryStringParameters) => {
     const queryParams = queryStringParameters || {};
 
     const sortKey = queryParams._sort || null;
     const sortOrder = queryParams._order || null;
-    const search = queryParams.search || null;      // Unspecified field, eg a Search
-    const filters = {
-      "userId": queryParams.userId || null,         // Specific match fields, eg a ReferenceInput
-    }
 
     let data;
     let statusCode=200;
 
-    console.log("Filter:", filters, "Sort:", sortKey, "Order:", sortOrder)
+    console.log("Sort:", sortKey, "Order:", sortOrder)
 
     let dataRaw = await dynamo.send(
         new ScanCommand({ TableName: tableName })
     );
 
     data = dataRaw.Items;
-
-    // Check if any speific filter options are provided, by ensuring the list of known ones isn't just full of null values
-    if (Object.values(filters).some(value => value !== null)) {
-        data = data.filter(item => {
-          for (const key in filters) {
-            if (filters[key] !== null && item[key] === filters[key]) {
-              return true;
-            }
-          }
-          return false;
-        });
-    };
-
-    if (search != null) {
-        data = data.filter(item => {
-            return Object.values(item).some(value => {
-              if (typeof value === 'string') {
-                return value.includes(search);
-              }
-              return false;
-            });
-        });
-    };
 
     if (sortKey != null) {
         data.sort((a, b) => {

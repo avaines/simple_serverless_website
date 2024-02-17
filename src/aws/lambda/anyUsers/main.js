@@ -1,93 +1,61 @@
-// const AWS = require('aws-sdk');
-// const dynamoDB = new AWS.DynamoDB.DocumentClient();
+// Lambda Handler for a Specific category of data.
+// In the real world, this should probably be a seperate handlers per method
+// METHOD	         API     URL
+// delete	         DELETE  http://myapi/users/UUID
+// getList	         GET     http://myapi/users?_sort=title&_order=ASC&title=bar
+// getOne	         GET     http://myapi/users/UUID
+// getMany	         GET     http://myapi/users?id=UUID&id=UUID&id=UUID
 
-const sampleData = require('./example-data.json');
+const { getOne, getMany } = require('./handlers/Get.js');
+const { deleteOne } = require('./handlers/Delete.js');
+
 
 exports.handler = async (event) => {
-  // Get query parameters from the request
-  console.log(event)
+    let statusCode = 200;
+    let body="";
+    let result
+    let headers = {"Content-Type": "application/json"};
 
-  const queryParams = event.queryStringParameters || {};
+    console.log("User:", event.requestContext.authorizer.jwt.claims.username, "has requested:", event.requestContext.http.method, event.requestContext.http.path)
 
-  const filter = queryParams.filter ? JSON.parse(queryParams.filter) : null;
-  const sort = queryParams.sort ? JSON.parse(queryParams.sort) : null;
-  const range = queryParams.range ? JSON.parse(queryParams.range) : null;
+    try {
+        switch (event.requestContext.http.method) {
+            // Read
+            case "GET":
+                if ("pathParameters" in event && event.pathParameters.proxy != "") {
+                    result = await getOne(event.pathParameters.proxy);
+                    break;
+                } else {
+                    result = await getMany(event.queryStringParameters);
+                    break;
+                }
 
-  // Handle filter functionality
-  let filteredData = [...sampleData];
+            // Delete
+            case "DELETE":
+                if ("pathParameters" in event && event.pathParameters.proxy != "") {
+                    result = await deleteOne(event.pathParameters.proxy);
+                    break;
+                }
 
-  if (filter) {
-    console.log("Found a filter query param", filter)
-    // partial match
-    filteredData = filteredData.filter(item => {
-      for (const key in filter) {
-        const filterValue = filter[key].toLowerCase(); // Convert filter value to lowercase for case-insensitive search
-        if (typeof item[key] === 'string' && !item[key].toLowerCase().includes(filterValue)) {
-          return false;
+            default:
+                throw new Error(`Unsupported method: "${requestContext.http.method}"`);
         }
-      }
-      return true;
-    });
 
-    // Exact match
-    // filteredData = filteredData.filter(item => {
-    //   for (const key in filter) {
-    //     if (item[key] !== filter[key]) {
-    //       return false;
-    //     }
-    //   }
-    //   return true;
-    // });
-  }
+    } catch (err) {
+        statusCode = 400;
+        body = err.message;
 
-  // Handle range functionality
-  if (range && range.length === 2) {
-    console.log("Found a range query param", range)
-    const [start, end] = range;
-    filteredData = filteredData.filter(item => item.id >= start && item.id <= end);
-  }
-
-  // Handle sort functionality
-  if (sort) {
-    console.log("Found a sort query param", sort)
-    filteredData.sort((a, b) => {
-      const [sortKey, sortOrder] = sort;
-      const comparison = a[sortKey] > b[sortKey] ? 1 : -1;
-      return sortOrder === 'ASC' ? comparison : -comparison;
-    });
-  }
-
-  // If 'id' is provided in path parameter, return specific item
-  const userId = event.pathParameters ? event.pathParameters.id : null;
-  if (userId) {
-    console.log("Found a user ID path", userId)
-    const user = filteredData.find(item => item.id === parseInt(userId));
-    if (!user) {
-      return {
-        statusCode: 404,
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ message: 'user not found' }, null, 4)
-      };
+    } finally {
+        if (typeof result.body === 'object') {
+            headers["X-Total-Count"] = result.body.length;
+        }
+        statusCode = result.statusCode;
+        body = JSON.stringify(result.body, null, 4);
     }
-    return {
-      statusCode: 200,
-      headers: { 
-        "X-Total-Count": filteredData.length,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(user, null, 4)
-    };
-  }
 
-  // Return filtered/sorted/ranged data
-  return {
-    statusCode: 200,
-    headers: { 
-      "X-Total-Count": filteredData.length,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(filteredData, null, 4)
-  };
+    return {
+        statusCode,
+        body,
+        headers,
+    };
 };

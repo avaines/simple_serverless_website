@@ -19,36 +19,17 @@ data "aws_iam_policy_document" "allow_lambda_any_posts_dynamodb" {
   statement {
     effect = "Allow"
     actions = [
+      "dynamodb:BatchGetItem",
+      "dynamodb:DeleteItem",
       "dynamodb:GetItem",
+      "dynamodb:PutItem",
+      "dynamodb:Scan",
     ]
 
     resources = [
       aws_dynamodb_table.posts.arn
     ]
   }
-
-  # statement {
-  #   effect = "Allow"
-  #   actions = [
-  #     "dynamodb:Query"
-  #   ]
-
-  #   resources = [
-  #     "${aws_dynamodb_table.posts.arn}/*/index/*"
-  #   ]
-  # }
-
-  # statement {
-  #   effect = "Allow"
-  #   actions = [
-  #     "dynamodb:GetItem",
-  #     "dynamodb:Query",
-  #   ]
-
-  #   resources = [
-  #     "${aws_dynamodb_table.posts.arn}/*"
-  #   ]
-  # }
 }
 
 resource "aws_iam_role" "lambda_any_posts" {
@@ -70,11 +51,6 @@ resource "aws_lambda_function" "api_any_posts" {
 
   handler = "main.handler"
   runtime = "nodejs20.x"
-
-  # logging_config {
-  #   log_format = "JSON"
-  #   system_log_level = "WARN"
-  # }
 
   environment {
     variables = {
