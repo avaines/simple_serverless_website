@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
-    bucket = "terraform-804221019544-state"
+    bucket = "USE-THE-MAKEFILE-TO-GENERATE-THIS"
     region = "us-east-1"
-    key    = "dev/main"
+    key    = "USE-THE-MAKEFILE-TO-GENERATE-THIS"
   }
 }
