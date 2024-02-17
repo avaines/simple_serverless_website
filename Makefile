@@ -47,6 +47,19 @@ infra-apply:
 		-var env_type=${ENV_TYPE} \
 		-var environment=${ENVIRONMENT} ;\
 
+infra-destroy:
+	$(MAKE) prepare-terraform-backend
+
+	cd ./src/terraform ;\
+	terraform init ;\
+	terraform destroy \
+		-compact-warnings \
+		-auto-approve \
+		-var aws_account_id=${AWS_ACCOUNT_ID} \
+		-var aws_region=${AWS_REGION} \
+		-var env_type=${ENV_TYPE} \
+		-var environment=${ENVIRONMENT} ;\
+
 infra-outputs:
 	$(MAKE) prepare-terraform-backend
 
