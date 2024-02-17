@@ -15,6 +15,7 @@ function sanitiseString(str){
 }
 
 exports.updateOne = async (id, httpPostBody) => {
+    console.log("Updating item", id, "with:", httpPostBody, "in table", tableName)
     parsedBody = JSON.parse(httpPostBody)
 
     const data = await dynamo.send(
@@ -28,7 +29,6 @@ exports.updateOne = async (id, httpPostBody) => {
             },
         })
     );
-
     body_message = (data.$metadata.httpStatusCode == 200) ? "Success" : "Unsuccessful"
 
     return {
